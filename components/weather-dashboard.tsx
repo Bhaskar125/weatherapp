@@ -70,72 +70,89 @@ export function WeatherDashboard() {
 
   // Show loading state
   if ((weatherLoading || forecastLoading) && !weatherData) {
-    return <WeatherSkeleton />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600">
+        <WeatherSkeleton />
+      </div>
+    )
   }
 
   // Show error state
   if (weatherError || forecastError) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <WeatherError error={weatherError || forecastError} onRetry={handleRefresh} />
-      </div>
-    )
-  }
-
-  // Show location request if no location available
-  if (!currentLocation && !geoLoading) {
-    return (
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <WeatherHeader />
-        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-          <MapPin className="h-16 w-16 text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Welcome to WeatherPro</h2>
-          <p className="text-muted-foreground mb-6 max-w-md">
-            Get accurate weather information by using your current location or search for any city above.
-          </p>
-          {geoError && <p className="text-sm text-destructive mb-4">{geoError}</p>}
-          <Button onClick={handleLocationRequest} disabled={geoLoading}>
-            <MapPin className="h-4 w-4 mr-2" />
-            {geoLoading ? "Getting Location..." : "Use Current Location"}
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600">
+        <div className="container mx-auto px-4 py-8">
+          <WeatherError error={weatherError || forecastError} onRetry={handleRefresh} />
         </div>
       </div>
     )
   }
 
+  // Show location request if no location
+  if (!currentLocation && !geoLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-white drop-shadow-lg">Welcome to WeatherPro</h1>
+              <p className="text-lg text-white/90 drop-shadow-md">
+                Get accurate weather forecasts for your location
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button onClick={handleLocationRequest} size="lg" className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm">
+                <MapPin className="h-5 w-5 mr-2" />
+                Use Current Location
+              </Button>
+            </div>
+            {geoError && (
+              <p className="text-sm text-red-200 bg-red-500/20 px-4 py-2 rounded-full backdrop-blur-sm">
+                {geoError}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show main weather dashboard
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <WeatherHeader />
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600">
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <WeatherHeader />
 
-      {weatherData && (
-        <>
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">
-              {weatherData.name}, {weatherData.sys.country}
-            </h1>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={weatherLoading || forecastLoading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${weatherLoading || forecastLoading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
+        <h1 className="text-3xl font-bold text-white drop-shadow-lg">
+          {currentLocation?.name}
+          {currentLocation?.country && `, ${currentLocation.country}`}
+        </h1>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            {weatherData && <CurrentWeatherCard weather={weatherData} />}
+            {weatherData && <WeatherMetrics weather={weatherData} />}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              <CurrentWeatherCard weather={weatherData} />
-              <WeatherMetrics weather={weatherData} />
-            </div>
-
-            <div className="space-y-6">
-              {forecastData && (
-                <>
-                  <HourlyForecast forecast={forecastData} />
-                  <DailyForecast forecast={forecastData} />
-                </>
-              )}
-            </div>
+          <div className="space-y-6">
+            {forecastData && <HourlyForecast forecast={forecastData} />}
+            {forecastData && <DailyForecast forecast={forecastData} />}
           </div>
-        </>
-      )}
+        </div>
+
+        <div className="flex justify-center">
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            disabled={weatherLoading || forecastLoading}
+            className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${weatherLoading || forecastLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
