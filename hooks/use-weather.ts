@@ -1,5 +1,5 @@
 import useSWR from "swr"
-import type { WeatherData, ForecastData, Location } from "@/lib/types"
+import type { WeatherData, ForecastData, UVIndexData, Location } from "@/lib/types"
 
 const fetcher = async (url: string) => {
   const response = await fetch(url)
@@ -26,6 +26,17 @@ export function useForecast(location: Location | null) {
 
   return useSWR<ForecastData>(url, fetcher, {
     refreshInterval: 600000, // 10 minutes
+    revalidateOnFocus: false,
+    errorRetryCount: 3,
+    errorRetryInterval: 5000,
+  })
+}
+
+export function useUVIndex(location: Location | null) {
+  const url = location ? `/api/weather/uv-index?lat=${location.lat}&lon=${location.lon}` : null
+
+  return useSWR<UVIndexData>(url, fetcher, {
+    refreshInterval: 300000, // 5 minutes
     revalidateOnFocus: false,
     errorRetryCount: 3,
     errorRetryInterval: 5000,

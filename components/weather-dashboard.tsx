@@ -2,13 +2,14 @@
 
 import { useEffect } from "react"
 import { useWeatherStore } from "@/lib/weather-store"
-import { useCurrentWeather, useForecast } from "@/hooks/use-weather"
+import { useCurrentWeather, useForecast, useUVIndex } from "@/hooks/use-weather"
 import { useGeolocation } from "@/hooks/use-geolocation"
 import { WeatherHeader } from "./weather-header"
 import { CurrentWeatherCard } from "./current-weather-card"
 import { WeatherMetrics } from "./weather-metrics"
 import { HourlyForecast } from "./hourly-forecast"
 import { DailyForecast } from "./daily-forecast"
+import { UVIndexCard } from "./uv-index-card"
 import { WeatherError } from "./weather-error"
 import { WeatherSkeleton } from "./weather-skeleton"
 import { Button } from "@/components/ui/button"
@@ -34,6 +35,13 @@ export function WeatherDashboard() {
     mutate: refreshForecast,
   } = useForecast(currentLocation)
 
+  const {
+    data: uvData,
+    error: uvError,
+    isLoading: uvLoading,
+    mutate: refreshUV,
+  } = useUVIndex(currentLocation)
+
   // Auto-detect location on first load
   useEffect(() => {
     if (!currentLocation && !geoLoading && !geoLocation) {
@@ -50,7 +58,7 @@ export function WeatherDashboard() {
 
   const handleRefresh = async () => {
     try {
-      await Promise.all([refreshWeather(), refreshForecast()])
+      await Promise.all([refreshWeather(), refreshForecast(), refreshUV()])
       toast({
         title: "Weather Updated",
         description: "Latest weather data has been loaded.",
@@ -135,6 +143,7 @@ export function WeatherDashboard() {
           </div>
 
           <div className="space-y-6">
+            {uvData && <UVIndexCard uvData={uvData} />}
             {forecastData && <HourlyForecast forecast={forecastData} />}
             {forecastData && <DailyForecast forecast={forecastData} />}
           </div>
@@ -145,10 +154,10 @@ export function WeatherDashboard() {
             onClick={handleRefresh}
             variant="outline"
             size="sm"
-            disabled={weatherLoading || forecastLoading}
+            disabled={weatherLoading || forecastLoading || uvLoading}
             className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${weatherLoading || forecastLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${weatherLoading || forecastLoading || uvLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
